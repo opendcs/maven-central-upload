@@ -9,11 +9,28 @@ plugins {
 
 openApiGenerate {
     inputSpec = "$projectDir/publisher-api.yaml"
+    outputDir = "$buildDir/generated/openApi"
     generatorName = "java"
     apiPackage = "org.opendcs.maven.central.api"
     modelPackage = "org.opendcs.maven.central.model"
     invokerPackage = "org.opendcs.maven.central.invoker"
+    library = "native"
+    globalProperties.set([
+        modelDocs: "false",
+        modelTests: "false",
+        apiDocs: "false",
+        apiTests: "false"
+    ])
+    ignoreFileOverride = "$projectDir/.openapi-generator-ignore"
+}
 
+sourceSets.main {
+    java.srcDir("$buildDir/generated/openApi/src/main/java")
 }
 
 compileJava.dependsOn tasks.openApiGenerate
+sourcesJar.dependsOn tasks.openApiGenerate
+
+dependencies {
+    api(libs.bundles.openapi.deps)
+}

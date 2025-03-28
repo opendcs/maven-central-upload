@@ -1,0 +1,11 @@
+plugins {
+    id 'central-upload.deps-conventions'
+    id 'central-upload.java-conventions'
+    id 'central-upload.publishing-conventions'
+    id 'central-upload.quality-conventions'
+    id 'java-library'
+}
+
+dependencies {
+    api(project(":central-api"))
+}
