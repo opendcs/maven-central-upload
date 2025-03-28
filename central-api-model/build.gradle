@@ -1,0 +1,19 @@
+plugins {
+    id 'central-upload.deps-conventions'
+    id 'central-upload.java-conventions'
+    id 'central-upload.publishing-conventions'
+    id 'central-upload.quality-conventions'
+    id 'java-library'
+    id "org.openapi.generator" version "7.12.0"
+}
+
+openApiGenerate {
+    inputSpec = "$projectDir/publisher-api.yaml"
+    generatorName = "java"
+    apiPackage = "org.opendcs.maven.central.api"
+    modelPackage = "org.opendcs.maven.central.model"
+    invokerPackage = "org.opendcs.maven.central.invoker"
+
+}
+
+compileJava.dependsOn tasks.openApiGenerate

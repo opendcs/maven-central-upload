@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+}
+
+ext.shouldSign = (project.findProperty("sign") ?: "false") == "true"
+
+if (shouldSign) {
+    plugins.apply('dev.sigstore.sign')
+
+    sigstoreSign {
+        oidcClient {
+            gitHub {
+                audience.set("sigstore")
+            }
+
+            web {
+                clientId.set("sigstore")
+                issuer.set("https://oauth2.sigstore.dev/auth")
+            }
+        }
+    }
+
+    signing {
+        def signingKey = project.getProperty("signingKey").trim().replace("\n","")
+        def signingPassword = project.getProperty("signingKeyPassword")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+}
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {
+                url = 'https://github.com/opendcs/gherkin-to-kiwi'
+
+                scm {
+                    connection = 'scm:git:https://github.com/opendcs/gherkin-to-kiwi.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:opendcs/gherkin-to-kiwi.git'
+                    url = 'https://github.com/opendcs/gherkin-to-kiwi'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'opendcs'
+                        name = 'The OpenDCS Team'
+                        email = 'https://github.com/opendcs'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            def releaseUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            def user = project.findProperty("ossrhUsername")
+            def passwd = project.findProperty("ossrhPassword")
+            name = 'MavenCentral'
+            url = version.endsWith('SNAPSHOT') ? snapshotUrl : releaseUrl
+            credentials {
+                username = user
+                password = passwd
+            }
+        }
+        mavenLocal()
+    }
+}

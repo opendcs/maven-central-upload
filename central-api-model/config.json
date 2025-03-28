@@ -1,0 +1,8 @@
+{
+    "java11": "true",
+    "dateLibrary": "java8",
+    "notNullJacksonAnnotation": "false",
+    "modelPackage": "org.opendcs.maven.central.api.model",
+    "jakarta": "true",
+    "useNullableForNotNull": "false"
+  }
