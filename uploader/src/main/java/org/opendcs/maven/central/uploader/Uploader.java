@@ -16,6 +16,8 @@
 package org.opendcs.maven.central.uploader;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
 
 import org.opendcs.maven.central.api.PublishingApi;
 import org.opendcs.maven.central.invoker.ApiClient;
@@ -35,23 +37,47 @@ public class Uploader {
     public static void main(String[] argv)
     {
         Uploader uploader = new Uploader(argv[0]);
-        uploader.publish();
+        uploader.publish(null);
         System.out.println(uploader.toString());
     }
 
-    private void publish() 
+    public FailableResult<UploadStatus,Throwable> publish(File bundle) 
     {
+        Objects.requireNonNull(bundle, "A file must be provided.");
+        if (!bundle.exists())
+        {
+            return FailableResult.failure(new IOException("File " + bundle.getAbsolutePath() + " does not exist."));
+        }
         PublishingApi publishing = new PublishingApi(client);
         String id;
         try 
         {
             id = publishing.apiV1PublisherUploadPost("test", "AUTOMATIC", new File("test.zip"));
-            System.out.println(id);
+            return FailableResult.success(new UploadStatus(id, client));
         }
         catch (ApiException ex) 
         {
-            ex.printStackTrace();
+            return FailableResult.failure(ex);
         }
         
-    }    
+    }
+
+    public static class UploadStatus
+    {
+        private final String deploymentId;
+        private final ApiClient client;
+
+        public UploadStatus(String deploymentId, ApiClient client)
+        {
+            this.deploymentId = deploymentId;
+            this.client = client;
+        }
+
+        public boolean isPublished() throws ApiException
+        {
+            PublishingApi api = new PublishingApi(client);
+            Object status = api.apiV1PublisherStatusPost(deploymentId);
+            return status != null;
+        }
+    }
 }
