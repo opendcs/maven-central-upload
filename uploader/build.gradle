@@ -8,4 +8,6 @@ plugins {
 
 dependencies {
     api(project(":central-api"))
+
+    testImplementation(libs.org.mock.server)
 }

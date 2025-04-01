@@ -34,14 +34,7 @@ public class Uploader {
         client.updateBaseUri(url);
     }
 
-    public static void main(String[] argv)
-    {
-        Uploader uploader = new Uploader(argv[0]);
-        uploader.publish(null);
-        System.out.println(uploader.toString());
-    }
-
-    public FailableResult<UploadStatus,Throwable> publish(File bundle) 
+    public FailableResult<Upload,Throwable> publish(File bundle, boolean automatic)
     {
         Objects.requireNonNull(bundle, "A file must be provided.");
         if (!bundle.exists())
@@ -52,8 +45,8 @@ public class Uploader {
         String id;
         try 
         {
-            id = publishing.apiV1PublisherUploadPost("test", "AUTOMATIC", new File("test.zip"));
-            return FailableResult.success(new UploadStatus(id, client));
+            id = publishing.apiV1PublisherUploadPost("test", automatic ? "AUTOMATIC": "USER_MANAGED", new File("test.zip"));
+            return FailableResult.success(new Upload(id, client));
         }
         catch (ApiException ex) 
         {
@@ -62,22 +55,4 @@ public class Uploader {
         
     }
 
-    public static class UploadStatus
-    {
-        private final String deploymentId;
-        private final ApiClient client;
-
-        public UploadStatus(String deploymentId, ApiClient client)
-        {
-            this.deploymentId = deploymentId;
-            this.client = client;
-        }
-
-        public boolean isPublished() throws ApiException
-        {
-            PublishingApi api = new PublishingApi(client);
-            Object status = api.apiV1PublisherStatusPost(deploymentId);
-            return status != null;
-        }
-    }
 }

@@ -22,6 +22,9 @@ openApiGenerate {
         apiTests: "false"
     ])
     ignoreFileOverride = "$projectDir/.openapi-generator-ignore"
+    typeMappings = [
+        "Object": "java.util.HashMap<String, Object>"
+    ]
 }
 
 sourceSets.main {
