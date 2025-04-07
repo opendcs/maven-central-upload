@@ -34,10 +34,7 @@ public class Uploader {
         client = new ApiClient();
         client.updateBaseUri(url);
         final String bearer = Base64.getEncoder().encodeToString((username+":"+password).getBytes());
-        client.setRequestInterceptor(builder ->
-        {
-            builder.header("Authorization","Bearer " + bearer);
-        });
+        client.setRequestInterceptor(builder -> builder.header("Authorization","Bearer " + bearer));
 
     }
 
