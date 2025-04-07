@@ -1,2 +1,23 @@
-group  = "org.opendcs"
-version = "test"
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins
+{
+    id 'eclipse'
+    id "com.palantir.git-version" version "3.2.0"
+}
+
+def static versionLabel(gitInfo) {
+    def branch = gitInfo.branchName // all branches are snapshots, only tags get released
+    def tag = gitInfo.lastTag
+    // tag is returned as is. Branch may need cleanup
+    return branch == null ? tag : 99 + "." + branch.replace("/", "-") + "-SNAPSHOT"
+}
+
+allprojects {
+    group = 'org.opendcs.maven'
+    version = project.findProperty("versionOverride") ?: versionLabel(versionDetails())
+}
