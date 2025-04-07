@@ -17,6 +17,7 @@ package org.opendcs.maven.central.uploader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Objects;
 
 import org.opendcs.maven.central.api.PublishingApi;
@@ -28,10 +29,16 @@ public class Uploader {
     private final ApiClient client;
 
 
-    public Uploader(String url)
+    public Uploader(String url, String username, String password)
     {
         client = new ApiClient();
         client.updateBaseUri(url);
+        final String bearer = Base64.getEncoder().encodeToString((username+":"+password).getBytes());
+        client.setRequestInterceptor(builder ->
+        {
+            builder.header("Authorization","Bearer " + bearer);
+        });
+
     }
 
     public FailableResult<Upload,Throwable> publish(File bundle, boolean automatic)
