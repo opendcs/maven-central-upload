@@ -45,7 +45,10 @@ public class Uploader {
         String id;
         try 
         {
-            id = publishing.apiV1PublisherUploadPost("test", automatic ? "AUTOMATIC": "USER_MANAGED", new File("test.zip"));
+            id = publishing.apiV1PublisherUploadPost("test", 
+                                                     automatic ? PublishingType.AUTOMATIC.toString()
+                                                               : PublishingType.USER_MANAGED.toString(),
+                                                     bundle);
             return FailableResult.success(new Upload(id, client));
         }
         catch (ApiException ex) 
