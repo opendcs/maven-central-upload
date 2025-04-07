@@ -34,3 +34,8 @@ As many tests as possible will be included; however, with actually going to mave
 test will of course be can the project publish itself.
 
 Since this project is a gradle publishing plugin and library it will use itself to publish release to maven central.
+
+
+WARNING: if you start playing around to help, use `./gradlew build -x jar` to start with. To bootstrap the use of the plugin
+the project is set to apply the plugin itself if the jar exists. Depending on any issues one is having this may prevent
+even a `./gradlew clean` if it's not evaluating correctly. Manually delete `plugin/build/libs/plugin.jar` if that happens.
