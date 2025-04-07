@@ -1,0 +1,5 @@
+plugins {
+    id 'central-upload.deps-conventions'
+    id 'central-upload.java-conventions'
+    id "org.opendcs.maven-central-upload" version project.version
+} 

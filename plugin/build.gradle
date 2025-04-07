@@ -25,9 +25,9 @@ dependencies {
 gradlePlugin {
     // Define the plugin
     plugins {
-        greeting {
-            id = 'org.example.greeting'
-            implementationClass = 'org.example.MavenCentralUploadPlugin'
+        mavenCentralUpload {
+            id = 'org.opendcs.maven-central-upload'
+            implementationClass = 'org.opendcs.MavenCentralUploadPlugin'
         }
     }
 }
