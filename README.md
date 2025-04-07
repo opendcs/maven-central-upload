@@ -26,3 +26,11 @@ This library builds on the Central API generated code to provide a friendly inte
 
 This is the gradle plugin. The primary focus of the plugin will be for use in OpenDCS projects. However, we try to do
 things in standards ways so it should be useful to others and we will gladly except issues and direct code contributions.
+
+
+## Testing
+
+As many tests as possible will be included; however, with actually going to maven central mocks must be used, the final
+test will of course be can the project publish itself.
+
+Since this project is a gradle publishing plugin and library it will use itself to publish release to maven central.
