@@ -16,6 +16,8 @@ repositories {
 }
 
 dependencies {
+    api project(":central-api")
+    api project(":uploader")
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
 

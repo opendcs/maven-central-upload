@@ -4,16 +4,42 @@
 package org.opendcs;
 
 import org.gradle.api.Project;
+import org.gradle.api.publish.PublishingExtension;
+import org.gradle.api.publish.maven.tasks.PublishToMavenLocal;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 
 /**
  * A simple 'hello world' plugin.
  */
 public class MavenCentralUploadPlugin implements Plugin<Project> {
+    @Override
     public void apply(Project project) {
-        // Register a task
-        project.getTasks().register("greeting", task -> {
-            task.doLast(s -> System.out.println("Hello from plugin 'org.opendcs.maven-central-upload'"));
+        project.getPluginManager().withPlugin("maven-publish", publishPlugin ->
+        {
+            project.afterEvaluate(p ->
+            {
+                final var publishTasks = p.getTasks().withType(PublishToMavenLocal.class);
+                var repos = p.getExtensions().getByType(PublishingExtension.class).getRepositories();
+
+                final var repo = repos.findByName("mavenCentralApi");
+                System.out.println("Have "+ repos.size() + " repos setup.");
+                repos.forEach(r -> System.out.println(r.getName()));
+                if (repo == null) {
+                    throw new GradleException("No repository named mavenCentralApi.");
+                }
+                p.getTasks().register("publishToMavenCentralApi", PublishToMavenCentral.class, task ->
+                {
+                    task.setGroup("Publishing");
+                    task.dependsOn(publishTasks);
+                    task.doLast(s ->
+                    {
+                        System.out.println("Hello from plugin 'org.opendcs.maven-central-upload'");
+                        System.out.println(repo.getName());
+                    });
+               });
+            });
+            
         });
     }
 }

@@ -32,15 +32,26 @@ class MavenCentralUploadPluginFunctionalTest {
     @Test void canRunTask() throws IOException {
         writeString(getSettingsFile(), "");
         writeString(getBuildFile(),
-            "plugins {" +
-            "  id('org.opendcs.maven-central-upload')" +
-            "}");
+            """
+plugins {
+    id('maven-publish')
+    id('org.opendcs.maven-central-upload')
+}
+publishing {
+    repositories {
+        maven {
+            name = "mavenCentralApi" 
+        }
+    }
+}
+"""
+    );
 
         // Run the build
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("greeting");
+        runner.withArguments("publishToMavenCentralApi");
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
 

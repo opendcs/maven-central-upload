@@ -5,9 +5,16 @@ plugins {
 repositories {
     gradlePluginPortal()
     mavenCentral()
+    mavenLocal()
 }
+
+def f = new File("${rootDir}/../plugin/build/libs/plugin.jar")
 
 dependencies {
     implementation "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:6.0.1.5171"
     implementation 'dev.sigstore:sigstore-gradle-sign-plugin:1.2.0'
+    
+    if (f.exists()) {
+        implementation files(f.absolutePath)
+    }
 }

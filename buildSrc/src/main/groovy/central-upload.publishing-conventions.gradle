@@ -29,6 +29,11 @@ if (shouldSign) {
 }
 }
 
+def f = new File("${rootDir}/plugin/build/libs/plugin.jar")
+if (f.exists()) {
+    plugins.apply('org.opendcs.maven-central-upload')
+}
+
 publishing {
     publications {
         maven(MavenPublication) {

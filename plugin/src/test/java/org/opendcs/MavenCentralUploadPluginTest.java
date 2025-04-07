@@ -4,7 +4,11 @@
 package org.opendcs;
 
 import org.gradle.testfixtures.ProjectBuilder;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.repositories.ArtifactRepository;
+import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor;
+import org.gradle.api.publish.PublishingExtension;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,9 +19,37 @@ class MavenCentralUploadPluginTest {
     @Test void pluginRegistersATask() {
         // Create a test project and apply the plugin
         Project project = ProjectBuilder.builder().build();
-        project.getPlugins().apply("org.opendcs.maven-central-upload");
+        project.getPlugins().apply("maven-publish");
+        project.getExtensions().configure(PublishingExtension.class, ext ->
+        {
+            ext.getRepositories().add(new ArtifactRepository() {
 
+                private String name = "mavenCentralApi";
+                @Override
+                public void content(Action<? super RepositoryContentDescriptor> configureAction)
+                {
+                    /* do nothing */
+                }
+
+                @Override
+                public String getName()
+                {
+                    return name;
+                }
+
+                @Override
+                public void setName(String name)
+                {
+                    this.name = name;
+                }
+                            
+            });
+        });
+        project.getPlugins().apply("org.opendcs.maven-central-upload");
+        
         // Verify the result
-        assertNotNull(project.getTasks().findByName("greeting"));
+        final var tasks = project.getTasksByName("publishToMavenCentralApi", false);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
     }
 }
