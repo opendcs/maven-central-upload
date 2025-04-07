@@ -38,18 +38,18 @@ publishing {
     publications {
         maven(MavenPublication) {
             pom {
-                url = 'https://github.com/opendcs/gherkin-to-kiwi'
+                url = 'https://github.com/opendcs/maven-central-uploader'
 
                 scm {
-                    connection = 'scm:git:https://github.com/opendcs/gherkin-to-kiwi.git'
-                    developerConnection = 'scm:git:ssh://git@github.com:opendcs/gherkin-to-kiwi.git'
-                    url = 'https://github.com/opendcs/gherkin-to-kiwi'
+                    connection = 'scm:git:https://github.com/opendcs/maven-central-uploader.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:opendcs/maven-central-uploader.git'
+                    url = 'https://github.com/opendcs/maven-central-uploader'
                 }
 
                 licenses {
                     license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name = 'CC0 1.0 Universal'
+                        url = 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
                     }
                 }
 

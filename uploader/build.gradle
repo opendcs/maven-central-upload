@@ -11,3 +11,17 @@ dependencies {
 
     testImplementation(libs.org.mock.server)
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'uploader'
+            from components.java
+
+            pom {
+                name = 'OpenDCS Maven Central uplodaer'
+                description = 'Library to support uploading to the maven central API.'
+            }
+        }
+    }
+}

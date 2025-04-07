@@ -37,3 +37,17 @@ sourcesJar.dependsOn tasks.openApiGenerate
 dependencies {
     api(libs.bundles.openapi.deps)
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'central-api'
+            from components.java
+
+            pom {
+                name = 'OpenDCS Maven Central Api'
+                description = 'Code generated from the Maven Central OpenAPI Specification.'
+            }
+        }
+    }
+}
