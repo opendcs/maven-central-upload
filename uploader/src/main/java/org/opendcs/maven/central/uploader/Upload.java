@@ -1,12 +1,8 @@
 package org.opendcs.maven.central.uploader;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.opendcs.maven.central.api.PublishingApi;
 import org.opendcs.maven.central.invoker.ApiClient;
 import org.opendcs.maven.central.invoker.ApiException;
-import org.opendcs.maven.central.invoker.ApiResponse;
 
 public class Upload
 {

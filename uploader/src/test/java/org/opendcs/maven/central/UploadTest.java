@@ -2,10 +2,8 @@ package org.opendcs.maven.central;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.HttpTemplate.template;
 
 import java.io.File;
 
@@ -14,14 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.junit.jupiter.MockServerExtension;
 import org.mockserver.model.MediaType;
-import org.mockserver.model.HttpTemplate.TemplateType;
 import org.opendcs.maven.central.uploader.DeploymentState;
-import org.opendcs.maven.central.uploader.DeploymentStatus;
 import org.opendcs.maven.central.uploader.Upload;
 import org.opendcs.maven.central.uploader.Uploader;
 
 @ExtendWith(MockServerExtension.class)
-public class UploadTest
+class UploadTest
 {
     
     @Test
