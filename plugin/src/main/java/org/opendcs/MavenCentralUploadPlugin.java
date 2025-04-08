@@ -29,35 +29,52 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
             project.afterEvaluate(p ->
             {
                 final var publishTasks = p.getTasks().withType(PublishToMavenLocal.class);
-                
-                var publishing = p.getExtensions().getByType(PublishingExtension.class);
-                var repos = publishing.getRepositories();
-                var publications = publishing.getPublications();
+
+                var repos = p.getExtensions().getByType(PublishingExtension.class).getRepositories();
                 final ArtifactRepository remote = repos.getAt("mavenCentralApi");
                 final MavenArtifactRepository mavenLocal = repos.mavenLocal();
 
                 var tasks = p.getTasks();
-                
-                var publicationsList = new ArrayList<MavenPublication>();
-                publications.forEach(pub ->
-                {
-                    if (pub instanceof MavenPublication publication)
-                    {
-                        publicationsList.add(publication);
-                    }
-                });
-
-                final var assembleTask = tasks.register("assembleCentralApiBundle", AssembleBundleTask.class, publicationsList);
-                assembleTask.configure(task -> 
+  
+                final var assembleTask = tasks.register("assembleCentralApiBundle", AssembleBundleTask.class, task ->
                 {
                     task.dependsOn(publishTasks);
-                    task.setGroup("Publishing");
+                    task.setGroup("publishing");
                 });
+
+                final var zipBundleTask = tasks.register("zipCentralApiBundle", Zip.class, task ->
+                {
+                    task.dependsOn(assembleTask);
+                    task.setGroup("publishing");
+                    var spec = new Spec<Task>() {
+                        @Override
+                        public boolean isSatisfiedBy(Task arg0) {
+                            return false;
+                        }
+                    };
+                    
+                    task.getOutputs().upToDateWhen(spec);
+                    final var localUrl = mavenLocal.getUrl();
+                    final var group = (String)p.getGroup();
+                    final var bundleBase = String.format("%s%s",localUrl.toString(), group.replaceAll("\\.","/"));
+                    final var version = (String)p.getVersion();
+                    task.getArchiveBaseName().set("central-api-bundle");
+                    task.getDestinationDirectory().set(p.getLayout().getBuildDirectory());
+                    task.from(bundleBase).filesMatching(".*" + version + ".*", null);
+                    task.doLast(s ->
+                    {
+                        var archiveFile = task.getArchiveFile().get().getAsFile();
+                        System.out.println("Base" + bundleBase + " version " + version);
+                        System.out.println(archiveFile.getAbsolutePath());
+                        System.out.println(archiveFile.length()/1024.0/1024.0 + " MB");
+                    });
+                });
+
                 tasks.register("publishToMavenCentralApi", PublishToMavenCentral.class, task ->
                 {
                     task.remote = (MavenArtifactRepository)remote;
-                    task.bundle = assembleTask.get().getArchiveFile();
-                    task.setGroup("Publishing");
+                    task.bundle = zipBundleTask.get().getArchiveFile();
+                    task.setGroup("publishing");
                     task.dependsOn(assembleTask);
                     task.doLast(s ->
                     {

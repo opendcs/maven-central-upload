@@ -29,9 +29,11 @@ public class PublishToMavenCentral extends DefaultTask
         }
 
         var credentials = remote.getCredentials();
+        /*
         Uploader uploader = new Uploader(remote.getUrl().toString(), credentials.getUsername(), credentials.getPassword());
         var result = uploader.publish(bundle.get().getAsFile(), false);
-        result.handleError((ex) -> ex.printStackTrace());
+        
+        result.handleError(ex -> ex.printStackTrace());
         var upload = result.getSuccess();
         try
         {
@@ -44,6 +46,7 @@ public class PublishToMavenCentral extends DefaultTask
         {
             throw new GradleException("Unable to check deployment state.", ex);
         }
+             */
     }    
 
     Provider<RegularFile> getBundle()
