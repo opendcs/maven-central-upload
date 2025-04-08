@@ -5,12 +5,23 @@ package org.opendcs;
 
 import org.gradle.testfixtures.ProjectBuilder;
 import org.gradle.api.Action;
+import org.gradle.api.ActionConfiguration;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.ComponentMetadataSupplier;
+import org.gradle.api.artifacts.ComponentMetadataVersionLister;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
+import org.gradle.api.artifacts.repositories.AuthenticationContainer;
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.artifacts.repositories.MavenRepositoryContentDescriptor;
+import org.gradle.api.artifacts.repositories.PasswordCredentials;
 import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor;
+import org.gradle.api.credentials.Credentials;
 import org.gradle.api.publish.PublishingExtension;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.URI;
+import java.util.Set;
 
 /**
  * A simple unit test for the 'org.example.greeting' plugin.
@@ -22,28 +33,7 @@ class MavenCentralUploadPluginTest {
         project.getPlugins().apply("maven-publish");
         project.getExtensions().configure(PublishingExtension.class, ext ->
         {
-            ext.getRepositories().add(new ArtifactRepository() {
-
-                private String name = "mavenCentralApi";
-                @Override
-                public void content(Action<? super RepositoryContentDescriptor> configureAction)
-                {
-                    /* do nothing */
-                }
-
-                @Override
-                public String getName()
-                {
-                    return name;
-                }
-
-                @Override
-                public void setName(String name)
-                {
-                    this.name = name;
-                }
-                            
-            });
+            ext.getRepositories().add(new TestMavenRepo("mavenCentralApi"));
         });
         project.getPlugins().apply("org.opendcs.maven-central-upload");
         
@@ -51,5 +41,152 @@ class MavenCentralUploadPluginTest {
         final var tasks = project.getTasksByName("publishToMavenCentralApi", false);
         assertNotNull(tasks);
         assertEquals(1, tasks.size());
+    }
+
+
+    public static class TestMavenRepo implements MavenArtifactRepository
+    {
+        private String name;
+        public TestMavenRepo(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public void content(Action<? super RepositoryContentDescriptor> configureAction) {
+            /* do nothing */
+        }
+
+        @Override
+        public String getName()
+        {
+            return name;
+        }
+
+        @Override
+        public void setName(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public boolean isAllowInsecureProtocol() {
+            return true;
+        }
+
+        @Override
+        public void setAllowInsecureProtocol(boolean allowInsecureProtocol) {
+            /* do nothing. */
+        }
+
+        @Override
+        public void authentication(Action<? super AuthenticationContainer> action) {
+            /* do nothing */
+        }
+
+        @Override
+        public void credentials(Action<? super PasswordCredentials> action) {
+            /* do nothing */
+        }
+
+        @Override
+        public void credentials(Class<? extends Credentials> credentialsType) {
+            /* do nothing */
+        }
+
+        @Override
+        public <T extends Credentials> void credentials(Class<T> credentialsType, Action<? super T> action) {
+            /* do nothing */
+
+        }
+
+        @Override
+        public AuthenticationContainer getAuthentication() {
+            return null;
+        }
+
+        @Override
+        public PasswordCredentials getCredentials() {
+            return null;
+        }
+
+        @Override
+        public <T extends Credentials> T getCredentials(Class<T> credentialsType) {
+            return null;
+        }
+
+        @Override
+        public void setComponentVersionsLister(Class<? extends ComponentMetadataVersionLister> lister) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setComponentVersionsLister(Class<? extends ComponentMetadataVersionLister> lister,
+                Action<? super ActionConfiguration> configureAction) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> rule) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> rule,
+                Action<? super ActionConfiguration> configureAction) {
+            /* do nothing */
+        }
+
+        @Override
+        public void artifactUrls(Object... urls) {
+            /* do nothing */
+        }
+
+        @Override
+        public Set<URI> getArtifactUrls() {
+            /* do nothing */
+            return Set.of();
+        }
+
+        @Override
+        public MetadataSources getMetadataSources() {
+            return null;
+        }
+
+        @Override
+        public URI getUrl() {
+            return URI.create("file:///test");
+        }
+
+        @Override
+        public void mavenContent(Action<? super MavenRepositoryContentDescriptor> configureAction) {
+            /* do nothing */
+        }
+
+        @Override
+        public void metadataSources(Action<? super MetadataSources> configureAction) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setArtifactUrls(Set<URI> urls) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setArtifactUrls(Iterable<?> urls) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setUrl(URI url) {
+            /* do nothing */
+        }
+
+        @Override
+        public void setUrl(Object url) {
+           /* do nothing */
+        }
+
     }
 }

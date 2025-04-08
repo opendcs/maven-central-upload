@@ -42,6 +42,7 @@ publishing {
         maven {
             name = "mavenCentralApi" 
         }
+        mavenLocal()
     }
 }
 """

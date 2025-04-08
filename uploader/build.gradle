@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":central-api"))
+    implementation(project(":central-api"))
 
     testImplementation(libs.org.mock.server)
 }

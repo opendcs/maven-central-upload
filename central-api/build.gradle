@@ -38,6 +38,12 @@ dependencies {
     api(libs.bundles.openapi.deps)
 }
 
+javadoc {
+    options {
+        addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
