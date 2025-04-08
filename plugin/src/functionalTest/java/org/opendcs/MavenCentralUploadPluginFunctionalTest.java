@@ -8,16 +8,34 @@ import java.io.IOException;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
+
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.junit.jupiter.MockServerExtension;
+import org.mockserver.model.MediaType;
+import org.opendcs.maven.central.uploader.DeploymentState;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 /**
  * A simple functional test for the 'org.example.greeting' plugin.
  */
-class MavenCentralUploadPluginFunctionalTest {
+@ExtendWith(MockServerExtension.class)
+class MavenCentralUploadPluginFunctionalTest
+{
+    private static final String TEST_USER = "test-user";
+    private static final String TEST_PASSWORD = "test-password";
+    private static final String TEST_CREDENTIALS = "Bearer " +
+        Base64.getEncoder().encodeToString((TEST_USER+":"+TEST_PASSWORD).getBytes());
+
     @TempDir
     File projectDir;
 
@@ -29,23 +47,90 @@ class MavenCentralUploadPluginFunctionalTest {
         return new File(projectDir, "settings.gradle");
     }
 
-    @Test void canRunTask() throws IOException {
+    private File getSourceFile() {
+        
+        var srcDir = new File(projectDir,"src/main/java/org/opendcs/test");
+        srcDir.mkdirs();
+        return new File(srcDir, "Test.java");
+    }
+
+    @Test
+    void canRunTask(MockServerClient client) throws IOException
+    {
+        
+        client.reset();
+        
+        client.when(
+            request().withMethod("POST")
+                     .withPath("/api/v1/publisher/upload")
+                     .withHeader("Authorization", TEST_CREDENTIALS)
+            )
+            .respond(response().withBody("test-user-managed").withContentType(MediaType.TEXT_PLAIN))
+        ;
+        final var statusTemplate = """
+                {
+                    "deploymentId": "%1$s", 
+                    "deploymentName":"%1$s",
+                    "deploymentState": "%2$s",
+                    "purls": [],
+                    "errors": {}
+                }
+                """;
+        client.when(
+            request().withMethod("POST")
+                     .withHeader("Authorization", TEST_CREDENTIALS)
+                     .withPath("/api/v1/publisher/status")
+                     .withQueryStringParameter("id", "test-user-managed")
+        )
+            .respond(response().withBody(String.format(statusTemplate, "test-user-managed", DeploymentState.VALIDATED), MediaType.APPLICATION_JSON))
+            ;
+
         writeString(getSettingsFile(), "");
+        writeString(getSourceFile(), """
+                package org.opendcs.test;
+
+                public interface Test {
+                    void operation();
+                }
+                """);
         writeString(getBuildFile(),
-            """
+            String.format("""
 plugins {
+    id('java-library')
     id('maven-publish')
     id('org.opendcs.maven-central-upload')
 }
+
+group = "org.opendcs.maven-test"
+version = "test"
+
+
+
 publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'test-artifact'
+            from components.java
+
+            pom {
+                name = 'OpenDCS Test Artifact'
+                description = 'A test Artifact'
+            }
+        }
+    }
     repositories {
         maven {
             name = "mavenCentralApi" 
+            url = "http://localhost:%d"
+            credentials {
+                username = "%s"
+                password = "%s"
+            }
         }
         mavenLocal()
     }
 }
-"""
+""", client.getPort(), TEST_USER, TEST_PASSWORD)
     );
 
         // Run the build

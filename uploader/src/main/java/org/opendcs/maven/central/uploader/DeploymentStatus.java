@@ -18,7 +18,7 @@ public record DeploymentStatus(String deploymentId, String deploymentName, Deplo
     public static DeploymentStatus fromApi(Map<String,Object> status)
     {
         return new DeploymentStatus(
-             (String)status.get("deploymenId"), 
+             (String)status.get("deploymentId"), 
              (String)status.get("deploymentName"),
              DeploymentState.valueOf((String)status.get("deploymentState")),
              (ArrayList<String>)status.get("purls"),

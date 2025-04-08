@@ -21,7 +21,7 @@ def static versionLabel(gitInfo) {
 def tmp_version = project.findProperty("versionOverride") ?: versionLabel(versionDetails())
 
 allprojects {
-    group = 'org.opendcs.maven'
+    group = 'io.github.opendcs.maven'
     version = tmp_version
 }
 

@@ -20,6 +20,7 @@ dependencies {
     api project(":uploader")
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
+    testImplementation(libs.org.mock.server)
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

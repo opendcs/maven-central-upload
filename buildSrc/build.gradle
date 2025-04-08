@@ -15,6 +15,9 @@ dependencies {
     implementation 'dev.sigstore:sigstore-gradle-sign-plugin:1.2.0'
     
     if (f.exists()) {
+        implementation files("${rootDir}/../central-api/build/libs/central-api-${version}.jar")
+        implementation files( "${rootDir}/../uploader/build/libs/uploader-${version}.jar")
         implementation files(f.absolutePath)
+        implementation (libs.bundles.openapi.deps)
     }
 }

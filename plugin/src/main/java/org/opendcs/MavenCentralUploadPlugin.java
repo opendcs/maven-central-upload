@@ -4,10 +4,18 @@
 package org.opendcs;
 
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.publish.PublishingExtension;
+import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal;
+import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.bundling.Zip;
+
+import java.nio.file.Files;
+import java.util.ArrayList;
+
 import org.gradle.api.Plugin;
 
 /**
@@ -20,19 +28,37 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
         {
             project.afterEvaluate(p ->
             {
-                System.out.println(p.getName());
                 final var publishTasks = p.getTasks().withType(PublishToMavenLocal.class);
-                var repos = p.getExtensions().getByType(PublishingExtension.class).getRepositories();
-
+                
+                var publishing = p.getExtensions().getByType(PublishingExtension.class);
+                var repos = publishing.getRepositories();
+                var publications = publishing.getPublications();
                 final ArtifactRepository remote = repos.getAt("mavenCentralApi");
                 final MavenArtifactRepository mavenLocal = repos.mavenLocal();
 
-                p.getTasks().register("publishToMavenCentralApi", PublishToMavenCentral.class, task ->
+                var tasks = p.getTasks();
+                
+                var publicationsList = new ArrayList<MavenPublication>();
+                publications.forEach(pub ->
                 {
-                    task.local = mavenLocal;
-                    task.remote = (MavenArtifactRepository)remote;
-                    task.setGroup("Publishing");
+                    if (pub instanceof MavenPublication publication)
+                    {
+                        publicationsList.add(publication);
+                    }
+                });
+
+                final var assembleTask = tasks.register("assembleCentralApiBundle", AssembleBundleTask.class, publicationsList);
+                assembleTask.configure(task -> 
+                {
                     task.dependsOn(publishTasks);
+                    task.setGroup("Publishing");
+                });
+                tasks.register("publishToMavenCentralApi", PublishToMavenCentral.class, task ->
+                {
+                    task.remote = (MavenArtifactRepository)remote;
+                    task.bundle = assembleTask.get().getArchiveFile();
+                    task.setGroup("Publishing");
+                    task.dependsOn(assembleTask);
                     task.doLast(s ->
                     {
                         System.out.println("Hello from plugin 'org.opendcs.maven-central-upload'");
