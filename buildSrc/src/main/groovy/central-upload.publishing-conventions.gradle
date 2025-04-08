@@ -26,13 +26,9 @@ if (shouldSign) {
         def signingKey = project.getProperty("signingKey").trim().replace("\n","")
         def signingPassword = project.getProperty("signingKeyPassword")
         useInMemoryPgpKeys(signingKey, signingPassword)
-}
+    }
 }
 
-def f = new File("${rootDir}/plugin/build/libs/plugin.jar")
-if (f.exists()) {
-    plugins.apply('org.opendcs.maven-central-upload')
-}
 
 publishing {
     publications {

@@ -8,7 +8,6 @@ import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal;
-import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 
 /**
@@ -21,6 +20,7 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
         {
             project.afterEvaluate(p ->
             {
+                System.out.println(p.getName());
                 final var publishTasks = p.getTasks().withType(PublishToMavenLocal.class);
                 var repos = p.getExtensions().getByType(PublishingExtension.class).getRepositories();
 
