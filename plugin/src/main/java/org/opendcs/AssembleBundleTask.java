@@ -1,18 +1,13 @@
 package org.opendcs;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
-import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.bundling.Zip;
 
 public class AssembleBundleTask extends DefaultTask
 {
@@ -21,10 +16,19 @@ public class AssembleBundleTask extends DefaultTask
     @TaskAction
     public void assemble()
     {
-        
+        var publications = getPublications();
+        var outputDir = getProject().getLayout().getBuildDirectory().dir("bundle").get().getAsFile();
+        outputDir.mkdirs();
+        for (MavenPublication pub: publications)
+        {
+            pub.getArtifacts().all(artifact ->
+            {
+                System.out.println("Artifact: " + artifact.getFile().getAbsolutePath());
+            });
+        }
     }
 
-
+    @Internal
     ArrayList<MavenPublication> getPublications()
     {
         var publications = new ArrayList<MavenPublication>();

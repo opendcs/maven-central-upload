@@ -9,6 +9,7 @@ import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
+import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.bundling.Zip;
@@ -28,7 +29,15 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
         {
             project.afterEvaluate(p ->
             {
-                final var publishTasks = p.getTasks().withType(PublishToMavenLocal.class);
+                final var publishTasks =new ArrayList<Task>();
+                project.getAllTasks(true).forEach((subProject, task)->
+                {
+                    if (task instanceof GenerateMavenPom genPomTask)
+                    {
+                        System.out.println("Adding Task" + genPomTask.getName());
+                        publishTasks.add(genPomTask);
+                    }
+                });
 
                 var repos = p.getExtensions().getByType(PublishingExtension.class).getRepositories();
                 final ArtifactRepository remote = repos.getAt("mavenCentralApi");
