@@ -24,11 +24,19 @@ import org.opendcs.maven.central.api.PublishingApi;
 import org.opendcs.maven.central.invoker.ApiClient;
 import org.opendcs.maven.central.invoker.ApiException;
 
+/**
+ * Wrap the Maven Central Api generated Code.
+ */
 public class Uploader {
 
     private final ApiClient client;
 
-
+    /**
+     * Create a new instance of the Uploader and set Api Credentials.
+     * @param url API url
+     * @param username username
+     * @param password api token
+     */
     public Uploader(String url, String username, String password)
     {
         client = new ApiClient();
@@ -38,6 +46,12 @@ public class Uploader {
 
     }
 
+    /**
+     * Publish the given bundle to MavenCentral
+     * @param bundle valid zip file containing the required files.
+     * @param automatic whether or not to automatically release the publication if valid.
+     * @return Upload object to check status and finish release, or the cause of error.
+     */
     public FailableResult<Upload,Throwable> publish(File bundle, boolean automatic)
     {
         Objects.requireNonNull(bundle, "A file must be provided.");
