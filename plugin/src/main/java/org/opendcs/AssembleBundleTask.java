@@ -25,20 +25,17 @@ public class AssembleBundleTask extends DefaultTask
 
     @OutputDirectory
     final DirectoryProperty outputDirectory = getProject().getObjects()
-                                                          .directoryProperty()
-                                                          .value(getProject().getLayout().getBuildDirectory().dir("bundle"));
+                                                          .directoryProperty();
+                                                          //.value(getProject().getLayout().getBuildDirectory().dir("bundle"));
 
     final Property<MavenPublication> publication = getProject().getObjects().property(MavenPublication.class);
 
     @TaskAction
     public void assemble()
     {
-        for ( var dep : this.getTaskDependencies().getDependencies(this))
-        {
-            System.out.println("Dep Task: " + dep.getName());
-        }
         var outputDir = outputDirectory.get().getAsFile();
-        outputDir.mkdirs();
+        getProject().delete(outputDir);
+        getProject().mkdir(outputDir);
         final var pub = publication.get();  
         final var groupFolder = Path.of(outputDir.getAbsolutePath(), pub.getGroupId().split("\\."));
         final var artifactFolder = new File(groupFolder.toFile(),pub.getArtifactId());
@@ -48,8 +45,9 @@ public class AssembleBundleTask extends DefaultTask
         {
             try
             {
-                System.out.println("Artifact: " + artifact.getFile().getAbsolutePath());
+                System.out.println("Artifact:   " + artifact.getFile().getAbsolutePath());
                 var newArtifact = new File(versionFolder, artifact.getFile().toPath().getFileName().toString());
+                System.out.println("Copying to: " + newArtifact.getAbsolutePath());
                 Files.copy(artifact.getFile().toPath(), newArtifact.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
             catch (IOException ex)
@@ -63,7 +61,8 @@ public class AssembleBundleTask extends DefaultTask
             if (t instanceof GenerateMavenPom pomTask)
             {
                 var pomFile = pomTask.getDestination();
-                var pomFileCopy = new File(versionFolder, pomFile.getName());
+                System.out.println("Getting Pom File "+ pomFile.getAbsolutePath()) ;
+                var pomFileCopy = new File(versionFolder, "pom.xml");
                 try
                 {
                     Files.copy(pomFile.toPath(), pomFileCopy.toPath());

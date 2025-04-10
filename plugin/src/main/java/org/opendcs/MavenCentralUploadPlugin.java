@@ -51,9 +51,11 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                     final var pubName = Character.toTitleCase(name.charAt(0)) + name.substring(1);
                     final var assembleTask = tasks.register("assemble"+pubName+CENTRAL_API_SUFFIX+"CentralApiBundle", AssembleBundleTask.class, task ->
                     {
+                        task.outputDirectory.set(project.getLayout().getBuildDirectory().dir("bundle/"+name));
                         task.publication.set(pub);
                         pub.getArtifacts().all(a -> task.dependsOn(a.getBuildDependencies()));
-                        task.setGroup(GROUP);                
+                        task.dependsOn(tasks.named("generatePomFileFor"+pubName+"Publication"));
+                        task.setGroup(GROUP);            
                     });
 
                     final var zipBundleTask = tasks.register("zip"+pubName+CENTRAL_API_SUFFIX+"Bundle", Zip.class, task ->
@@ -61,7 +63,7 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                         task.getInputs().dir(assembleTask.get().getOutputDirectory());
                         task.dependsOn(assembleTask);
                         task.setGroup(GROUP);
-                        task.getArchiveBaseName().set("central-api-bundle");
+                        task.getArchiveBaseName().set("central-api-bundle-for-"+pubName);
                         task.getDestinationDirectory().set(project.getLayout().getBuildDirectory());
                         task.from(assembleTask.get().getOutputs());
                         task.getOutputs().file(task.getArchiveFile());

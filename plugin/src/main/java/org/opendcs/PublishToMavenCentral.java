@@ -35,6 +35,9 @@ public class PublishToMavenCentral extends DefaultTask
         var credentials = remote.getCredentials();
         
         Uploader uploader = new Uploader(remote.getUrl().toString(), credentials.getUsername(), credentials.getPassword());
+        var fileToUpload = bundle.get().getAsFile();
+        logger.info("Using {} with size {}",fileToUpload.getAbsolutePath(), fileToUpload.length()/1024.0/1024.0);
+        
         var result = uploader.publish(bundle.get().getAsFile(), false);
         
         result.handleError(ex -> ex.printStackTrace());
