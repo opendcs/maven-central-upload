@@ -22,7 +22,7 @@ version = tmp_version
  */
 def f = new File("${rootDir}/plugin/build/libs/plugin-${tmp_version}.jar")
 if (f.exists()) {
-    plugins.apply('org.opendcs.maven-central-upload')
+    plugins.apply('io.github.opendcs.maven-central-upload')
 }
 
 

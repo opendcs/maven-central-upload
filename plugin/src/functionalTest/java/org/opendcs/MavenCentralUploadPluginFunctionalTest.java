@@ -99,7 +99,7 @@ class MavenCentralUploadPluginFunctionalTest
 plugins {
     id('java-library')
     id('maven-publish')
-    id('org.opendcs.maven-central-upload')
+    id('io.github.opendcs.maven-central-upload')
 }
 
 group = "org.opendcs.maven-test"
@@ -138,7 +138,7 @@ publishing {
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("publishToMavenCentralApi","--info");
+        runner.withArguments("publishAllToNewMavenCentralApi","--info");
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
         // Verify the result

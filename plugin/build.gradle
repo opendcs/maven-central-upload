@@ -26,11 +26,19 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+def projectDescription  = """
+    Uses existing Maven-Publish setup and bundles for and uploads to 
+    the new maven central api.
+""".stripIndent()
+
+def projectName = "OpenDCS Maven Central Upload Plugin"
+
 gradlePlugin {
     // Define the plugin
     plugins {
         mavenCentralUpload {
-            id = 'org.opendcs.maven-central-upload'
+            id = 'io.github.opendcs.maven-central-upload'
+            displayName = projectName
             implementationClass = 'org.opendcs.MavenCentralUploadPlugin'
         }
     }
@@ -62,4 +70,34 @@ tasks.named('check') {
 tasks.named('test') {
     // Use JUnit Jupiter for unit tests.
     useJUnitPlatform()
+}
+
+
+publishing.publications.withType(MavenPublication) {
+    pom {
+        name = projectName
+        description = projectDescription
+        url = 'https://github.com/opendcs/maven-central-upload'
+
+        scm {
+            connection = 'scm:git:https://github.com/opendcs/maven-central-upload'
+            developerConnection = 'scm:git:ssh://git@github.com:opendcs/maven-central-upload.git'
+            url = 'https://github.com/opendcs/gherkin-to-kiwi'
+        }
+
+        licenses {
+            license {
+                name = 'CC0 1.0 Universal'
+                url = 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'opendcs'
+                name = 'The OpenDCS Team'
+                email = 'https://github.com/opendcs'
+            }
+        }
+    }
 }
