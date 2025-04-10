@@ -15,6 +15,7 @@ import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.junit.jupiter.MockServerExtension;
@@ -36,7 +37,7 @@ class MavenCentralUploadPluginFunctionalTest
     private static final String TEST_CREDENTIALS = "Bearer " +
         Base64.getEncoder().encodeToString((TEST_USER+":"+TEST_PASSWORD).getBytes());
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     File projectDir;
 
     private File getBuildFile() {
@@ -137,10 +138,9 @@ publishing {
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("publishToMavenCentralApi");
+        runner.withArguments("publishToMavenCentralApi","--info");
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
-
         // Verify the result
         assertTrue(result.getOutput().contains("Hello from plugin 'org.opendcs.maven-central-upload'"));
     }

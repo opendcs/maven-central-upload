@@ -7,42 +7,5 @@ buildscript {
 plugins
 {
     id 'eclipse'
-    id 'maven-publish'
-    id "com.palantir.git-version" version "3.2.0"
 }
-
-def static versionLabel(gitInfo) {
-    def branch = gitInfo.branchName // all branches are snapshots, only tags get released
-    def tag = gitInfo.lastTag
-    // tag is returned as is. Branch may need cleanup
-    return branch == null ? tag : 99 + "." + branch.replace("/", "-") + "-SNAPSHOT"
-}
-
-def tmp_version = project.findProperty("versionOverride") ?: versionLabel(versionDetails())
-
-allprojects {
-    group = 'io.github.opendcs.maven'
-    version = tmp_version
-}
-
-
-def f = new File("${rootDir}/plugin/build/libs/plugin-${tmp_version}.jar")
-print("File: ${f.absolutePath}")
-if (f.exists()) {
-    plugins.apply('org.opendcs.maven-central-upload')
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "mavenCentralApi"
-            url = "https://central.sonatype.com"
-            def user = project.findProperty("centralApiUsername")
-            def passwd = project.findProperty("centralApiPassword")
-            credentials {
-                username = user
-                password = passwd
-            }
-        }
-    }
-}
+    

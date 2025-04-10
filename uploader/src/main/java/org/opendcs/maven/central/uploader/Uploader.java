@@ -63,7 +63,7 @@ public class Uploader {
         String id;
         try 
         {
-            id = publishing.apiV1PublisherUploadPost("test", 
+            id = publishing.apiV1PublisherUploadPost(null, 
                                                      automatic ? PublishingType.AUTOMATIC.toString()
                                                                : PublishingType.USER_MANAGED.toString(),
                                                      bundle);

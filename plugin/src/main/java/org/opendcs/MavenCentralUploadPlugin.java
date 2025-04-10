@@ -7,6 +7,9 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.internal.file.ManagedFactories.RegularFilePropertyManagedFactory;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
@@ -23,75 +26,57 @@ import org.gradle.api.Plugin;
  * A simple 'hello world' plugin.
  */
 public class MavenCentralUploadPlugin implements Plugin<Project> {
+    private static final String GROUP = "Central API";
+    private static final String PUBLISH_ALL_TASK = "publishAllToMavenCentralApi";
     @Override
-    public void apply(Project project) {
+    public void apply(Project project)
+    {   
         project.getPluginManager().withPlugin("maven-publish", publishPlugin ->
         {
-            project.afterEvaluate(p ->
+            var tasks = project.getTasks();
+            var extension = project.getExtensions().findByType(PublishingExtension.class);
+        
+            final var assembleTask = tasks.register("assembleCentralApiBundle", AssembleBundleTask.class, task ->
             {
-                final var publishTasks =new ArrayList<Task>();
-                project.getAllTasks(true).forEach((subProject, task)->
+                extension.getPublications().withType(MavenPublication.class).all(pub ->
                 {
-                    if (task instanceof GenerateMavenPom genPomTask)
-                    {
-                        System.out.println("Adding Task" + genPomTask.getName());
-                        publishTasks.add(genPomTask);
-                    }
+                    pub.getArtifacts().all(a -> task.dependsOn(a.getBuildDependencies()));
                 });
-
-                var repos = p.getExtensions().getByType(PublishingExtension.class).getRepositories();
-                final ArtifactRepository remote = repos.getAt("mavenCentralApi");
-                final MavenArtifactRepository mavenLocal = repos.mavenLocal();
-
-                var tasks = p.getTasks();
-  
-                final var assembleTask = tasks.register("assembleCentralApiBundle", AssembleBundleTask.class, task ->
-                {
-                    task.dependsOn(publishTasks);
-                    task.setGroup("publishing");
-                });
-
-                final var zipBundleTask = tasks.register("zipCentralApiBundle", Zip.class, task ->
-                {
-                    task.dependsOn(assembleTask);
-                    task.setGroup("publishing");
-                    var spec = new Spec<Task>() {
-                        @Override
-                        public boolean isSatisfiedBy(Task arg0) {
-                            return false;
-                        }
-                    };
-                    
-                    task.getOutputs().upToDateWhen(spec);
-                    final var localUrl = mavenLocal.getUrl();
-                    final var group = (String)p.getGroup();
-                    final var bundleBase = String.format("%s%s",localUrl.toString(), group.replaceAll("\\.","/"));
-                    final var version = (String)p.getVersion();
-                    task.getArchiveBaseName().set("central-api-bundle");
-                    task.getDestinationDirectory().set(p.getLayout().getBuildDirectory());
-                    task.from(bundleBase).filesMatching(".*" + version + ".*", null);
-                    task.doLast(s ->
-                    {
-                        var archiveFile = task.getArchiveFile().get().getAsFile();
-                        System.out.println("Base" + bundleBase + " version " + version);
-                        System.out.println(archiveFile.getAbsolutePath());
-                        System.out.println(archiveFile.length()/1024.0/1024.0 + " MB");
-                    });
-                });
-
-                tasks.register("publishToMavenCentralApi", PublishToMavenCentral.class, task ->
-                {
-                    task.remote = (MavenArtifactRepository)remote;
-                    task.bundle = zipBundleTask.get().getArchiveFile();
-                    task.setGroup("publishing");
-                    task.dependsOn(assembleTask);
-                    task.doLast(s ->
-                    {
-                        System.out.println("Hello from plugin 'org.opendcs.maven-central-upload'");
-                    });
-               });
+                task.setGroup(GROUP);
             });
-            
+
+            final var zipBundleTask = tasks.register("zipCentralApiBundle", Zip.class, task ->
+            {
+                task.getInputs().dir(assembleTask.get().getOutputDirectory());
+                task.dependsOn(assembleTask);
+                task.setGroup(GROUP);
+                task.getArchiveBaseName().set("central-api-bundle");
+                task.getDestinationDirectory().set(project.getLayout().getBuildDirectory());
+                task.from(assembleTask.get().getOutputs());
+                task.getOutputs().file(task.getArchiveFile());
+                task.doLast(s ->
+                {
+                    var archiveFile = task.getArchiveFile().get().getAsFile();
+                    System.out.println(archiveFile.getAbsolutePath());
+                    System.out.println(archiveFile.length()/1024.0/1024.0 + " MB");
+                });
+            });
+
+            tasks.register("publishToMavenCentralApi", PublishToMavenCentral.class, task ->
+            {
+                var repos = extension.getRepositories();
+                final ArtifactRepository remote = repos.findByName("mavenCentralApi");
+                task.getInputs().file(zipBundleTask.get().getArchiveFile().get());
+                task.dependsOn(zipBundleTask);
+                task.remote = (MavenArtifactRepository)remote;
+                task.bundle.set(zipBundleTask.get().getArchiveFile());
+
+                task.setGroup(GROUP);
+                task.doLast(s ->
+                {
+                    System.out.println("Hello from plugin 'org.opendcs.maven-central-upload'");
+                });
+            });                
         });
     }
 }
