@@ -56,6 +56,18 @@ public class Upload
     }
 
     /**
+     *
+     * @return The current status object
+     * @throws ApiException any issues with the Http Connection to the API.
+     */
+    public DeploymentStatus status() throws ApiException
+    {
+        updateStatus();
+        return currentStatus;
+    }
+
+
+    /**
      * Publish the deployment.
      * @throws ApiException any issues with the Http Connection to the API.
      */

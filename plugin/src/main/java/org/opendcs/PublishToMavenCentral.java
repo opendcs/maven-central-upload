@@ -8,6 +8,7 @@ import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.api.tasks.options.Option;
 import org.opendcs.maven.central.invoker.ApiException;
 import org.opendcs.maven.central.uploader.DeploymentState;
@@ -45,17 +46,45 @@ public abstract class PublishToMavenCentral extends DefaultTask
             Uploader uploader = new Uploader(remote.getUrl().toString(), credentials.getUsername(), credentials.getPassword());
             var fileToUpload = bundle.get().getAsFile();
             logger.info("Using {} with size {}",fileToUpload.getAbsolutePath(), fileToUpload.length()/1024.0/1024.0);
+            var properties = getProject().getProperties();
+            final String automaticPublish = (String)properties.get("automaticPublish");
+            boolean automatic = Boolean.parseBoolean(automaticPublish);
 
-            var result = uploader.publish(bundle.get().getAsFile(), false);
+            var result = uploader.publish(bundle.get().getAsFile(), automatic);
 
-            result.handleError(ex -> ex.printStackTrace());
+            result.handleError(ex ->
+            {
+                logger.error("Unable to upload bundle.", ex);
+                throw new GradleException("Unable to upload bundle.", ex);
+            });
             var upload = result.getSuccess();
             try
             {
-                if (upload.state() == DeploymentState.VALIDATED)
+                var state = upload.state();
+                final var finishState = automatic ? DeploymentState.PUBLISHED : DeploymentState.VALIDATED;
+                while (state != DeploymentState.FAILED && state != finishState)
                 {
-                    logger.info("Deployment ready.");
+                    logger.info("DeploymentStatus... {}",  state);
+                    try
+                    {
+                        Thread.sleep(5000);
+                    }
+                    catch (InterruptedException ex)
+                    {
+                        /** no nopthing */
+                    }
+                    state = upload.state();
                 }
+
+                if (state == DeploymentState.FAILED)
+                {
+                    var status = upload.status();
+                    logger.error("Deployment failed. {}", status.errors());
+                    this.getState().addFailure(new TaskExecutionException(this, new GradleException("Maven Central Validation failed.")));
+                }
+
+                logger.info("Deployment Ready. {}", (automatic ? "Publish Successful" : "Validation Finished. Finish deployment at Maven Central"));
+
             }
             catch (ApiException ex)
             {
