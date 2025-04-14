@@ -56,5 +56,5 @@ jobs:
              -PsigningKeyPassword="${{ secrets.signingKeyPassword != null && secrets.signingKeyPassword || secrets.SIGNING_KEY_PASSWORD }}" \
              -PcentralApiUsername=${{ secrets.mavenCentralUsername != null && secrets.mavenCentralUsername || secrets.MAVENCENTRAL_USERNAME }} \
              -PcentralApiPassword=${{ secrets.mavenCentralPassword != null && secrets.mavenCentralPassword || secrets.MAVENCENTRAL_PASSWORD }} \
-             -PsigningKey="${{ secrets.signingKey != null && secrets.signingKey || secrets.SIGNING_KEY }}"
+             -PsigningKey="${{ secrets.signingKey != null && secrets.signingKey || secrets.SIGNING_KEY }}" \
              -PautomaticPublish=true
