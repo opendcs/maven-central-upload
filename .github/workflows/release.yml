@@ -15,7 +15,7 @@ on:
         required: true
       mavenCentralUserName:
         required: true
-      mavenCentralToken:
+      mavenCentralPassword:
         required: true
   workflow_dispatch:
     inputs:
