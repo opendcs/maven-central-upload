@@ -29,7 +29,11 @@ if (f.exists()) {
 ext.shouldSign = (project.findProperty("sign") ?: "false") == "true"
 
 if (shouldSign) {
-   /* plugins.apply('dev.sigstore.sign')
+    /*
+    Either sigstore is not compatiable with lazy evaluation OR this plugin isn't doing it right
+    needs more investigation.
+
+    plugins.apply('dev.sigstore.sign')
 
     sigstoreSign {
         oidcClient {

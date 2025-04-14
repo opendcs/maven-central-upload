@@ -44,6 +44,12 @@ javadoc {
     }
 }
 
+if (shouldSign) {
+    signing {
+        sign publishing.publications.maven
+    }
+}
+
 publishing {
     publications {
         maven(MavenPublication) {

@@ -72,6 +72,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+if (shouldSign) {
+    signing {
+        sign publishing.publications.maven
+    }
+}
+
 
 publishing.publications.withType(MavenPublication) {
     pom {
