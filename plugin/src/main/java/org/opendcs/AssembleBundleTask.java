@@ -5,20 +5,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-
+import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+import java.util.List;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
-import org.gradle.api.Project;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
+
 
 public class AssembleBundleTask extends DefaultTask
 {
@@ -26,7 +26,6 @@ public class AssembleBundleTask extends DefaultTask
     @OutputDirectory
     final DirectoryProperty outputDirectory = getProject().getObjects()
                                                           .directoryProperty();
-                                                          //.value(getProject().getLayout().getBuildDirectory().dir("bundle"));
 
     final Property<MavenPublication> publication = getProject().getObjects().property(MavenPublication.class);
 
@@ -36,7 +35,7 @@ public class AssembleBundleTask extends DefaultTask
         var outputDir = outputDirectory.get().getAsFile();
         getProject().delete(outputDir);
         getProject().mkdir(outputDir);
-        final var pub = publication.get();  
+        final var pub = publication.get();
         final var groupFolder = Path.of(outputDir.getAbsolutePath(), pub.getGroupId().split("\\."));
         final var artifactFolder = new File(groupFolder.toFile(),pub.getArtifactId());
         final var versionFolder = new File(artifactFolder, pub.getVersion());
@@ -45,14 +44,13 @@ public class AssembleBundleTask extends DefaultTask
         {
             try
             {
-                System.out.println("Artifact:   " + artifact.getFile().getAbsolutePath());
                 var newArtifact = new File(versionFolder, artifact.getFile().toPath().getFileName().toString());
-                System.out.println("Copying to: " + newArtifact.getAbsolutePath());
-                Files.copy(artifact.getFile().toPath(), newArtifact.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                copy(artifact.getFile().toPath(), newArtifact.toPath());
             }
             catch (IOException ex)
             {
-                throw new GradleException("Unable to copy required file."+ex.getLocalizedMessage(), ex);   
+                ex.printStackTrace();
+                throw new GradleException("Unable to copy required file."+ex.getLocalizedMessage(), ex);
             }
         });
 
@@ -61,15 +59,14 @@ public class AssembleBundleTask extends DefaultTask
             if (t instanceof GenerateMavenPom pomTask)
             {
                 var pomFile = pomTask.getDestination();
-                System.out.println("Getting Pom File "+ pomFile.getAbsolutePath()) ;
                 var pomFileCopy = new File(versionFolder, "pom.xml");
                 try
                 {
-                    Files.copy(pomFile.toPath(), pomFileCopy.toPath());
+                    copy(pomFile.toPath(), pomFileCopy.toPath());
                 }
                 catch (IOException ex)
                 {
-                    throw new GradleException("Unable to copy required file."+ex.getLocalizedMessage(), ex);   
+                    throw new GradleException("Unable to copy pom."+ex.getLocalizedMessage(), ex);
                 }
             }
         });
@@ -79,5 +76,43 @@ public class AssembleBundleTask extends DefaultTask
     public DirectoryProperty getOutputDirectory()
     {
         return this.outputDirectory;
+    }
+
+    private void copy(Path source, Path dest) throws IOException
+    {
+        Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+        createHashes(dest);
+        var name = source.getFileName();
+        var ascFile = Path.of(source.getParent().toString(), name.toString()+".asc");
+        if (ascFile.toFile().exists()) {
+            var destAscFile = Path.of(dest.getParent().toString(),dest.getFileName().toString()+".asc");
+            Files.copy(ascFile, destAscFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    private void createHashes(Path dest) throws IOException
+    {
+        var name = dest.getFileName();
+        var parent = dest.getParent();
+        var algorithms = List.of("MD5", "SHA-1", "SHA-256", "SHA-512");
+        try
+        {
+            for(var algorithm: algorithms)
+            {
+                var digestAlgo = MessageDigest.getInstance(algorithm);
+                digestAlgo.update(Files.readAllBytes(dest));
+                var digest = digestAlgo.digest();
+                var hashPath = Path.of(parent.toString(), name.toString()+"."+algorithm.replace("-","").toLowerCase());
+                var hexFormatter = HexFormat.of();
+                Files.write(hashPath, hexFormatter.formatHex(digest).getBytes(), StandardOpenOption.WRITE,
+                                                                                 StandardOpenOption.TRUNCATE_EXISTING,
+                                                                                 StandardOpenOption.CREATE);
+            }
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            throw new IOException("Unable to create file hashes", ex);
+        }
+
     }
 }

@@ -4,21 +4,11 @@
 package org.opendcs;
 
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
-import org.gradle.api.file.RegularFile;
-import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.internal.file.ManagedFactories.RegularFilePropertyManagedFactory;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
-import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
-import org.gradle.api.publish.maven.tasks.PublishToMavenLocal;
-import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.bundling.Zip;
-
-import java.nio.file.Files;
-import java.util.ArrayList;
 
 import org.gradle.api.Plugin;
 
@@ -33,17 +23,19 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project)
-    {   
+    {
         project.getPluginManager().withPlugin("maven-publish", publishPlugin ->
         {
+            final var hasSigning = project.getPluginManager().hasPlugin("signing");
             var tasks = project.getTasks();
             var extension = project.getExtensions().findByType(PublishingExtension.class);
-            
+
             if (extension != null)
             {
                 tasks.register(PUBLISH_ALL_TASK, task ->
                 {
                     task.setGroup(GROUP);
+                    task.setDescription("Publish all artifacts of this build to maven central.");
                 });
                 extension.getPublications().withType(MavenPublication.class).all(pub ->
                 {
@@ -55,7 +47,12 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                         task.publication.set(pub);
                         pub.getArtifacts().all(a -> task.dependsOn(a.getBuildDependencies()));
                         task.dependsOn(tasks.named("generatePomFileFor"+pubName+"Publication"));
-                        task.setGroup(GROUP);            
+                        if (hasSigning)
+                        {
+                            task.dependsOn(tasks.named("sign"+pubName+"Publication"));
+                        }
+                        task.setGroup(GROUP);
+
                     });
 
                     final var zipBundleTask = tasks.register("zip"+pubName+CENTRAL_API_SUFFIX+"Bundle", Zip.class, task ->
@@ -63,12 +60,12 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                         task.getInputs().dir(assembleTask.get().getOutputDirectory());
                         task.dependsOn(assembleTask);
                         task.setGroup(GROUP);
-                        task.getArchiveBaseName().set("central-api-bundle-for-"+pubName);
+                        task.getArchiveBaseName().set("central-api-bundle-for-"+project.getName()+"-"+pubName);
                         task.getDestinationDirectory().set(project.getLayout().getBuildDirectory());
                         task.from(assembleTask.get().getOutputs());
                         task.getOutputs().file(task.getArchiveFile());
                     });
-        
+
                     final var publishTask = tasks.register("publish"+pubName+"To"+CENTRAL_API_SUFFIX, PublishToMavenCentral.class, task ->
                     {
                         var repos = extension.getRepositories();
@@ -77,19 +74,17 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                         task.dependsOn(zipBundleTask);
                         task.remote = (MavenArtifactRepository)remote;
                         task.bundle.set(zipBundleTask.get().getArchiveFile());
-        
+                        task.getOutputs().upToDateWhen(t -> false);
                         task.setGroup(GROUP);
+                        task.setDescription("Publish bundle to Maven Central API.");
                         task.doLast(s ->
                         {
                             System.out.println("Hello from plugin 'org.opendcs.maven-central-upload'");
                         });
-                
                     });
                     tasks.named(PUBLISH_ALL_TASK, t -> t.dependsOn(publishTask));
                 });
-
-            
-            }        
+            }
         });
     }
 }

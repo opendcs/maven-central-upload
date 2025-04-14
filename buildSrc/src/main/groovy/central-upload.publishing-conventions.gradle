@@ -29,7 +29,7 @@ if (f.exists()) {
 ext.shouldSign = (project.findProperty("sign") ?: "false") == "true"
 
 if (shouldSign) {
-    plugins.apply('dev.sigstore.sign')
+   /* plugins.apply('dev.sigstore.sign')
 
     sigstoreSign {
         oidcClient {
@@ -42,7 +42,7 @@ if (shouldSign) {
                 issuer.set("https://oauth2.sigstore.dev/auth")
             }
         }
-    }
+    }*/
 
     signing {
         def signingKey = project.getProperty("signingKey").trim().replace("\n","")
