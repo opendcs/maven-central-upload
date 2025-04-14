@@ -14,7 +14,7 @@ jobs:
       token: ${{ secrets.GITHUB_TOKEN }}
       signingKey: ${{ secrets.SIGNING_KEY }}
       signingKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      ossrhUsername: ${{ secrets.MAVENCENTRAL_USERNAME }}
-      ossrhPassword: ${{ secrets.MAVENCENTRAL_PASSWORD }}
+      mavenCentralUsername: ${{ secrets.MAVENCENTRAL_USERNAME }}
+      mavenCentralPassword: ${{ secrets.MAVENCENTRAL_PASSWORD }}
     with:
       branch: ${{github.ref_name}}

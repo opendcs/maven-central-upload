@@ -33,9 +33,3 @@ jobs:
           dependency-graph: generate-and-submit
       - name: Build
         run: ./gradlew build
-      - name: Upload Coverage
-        if: matrix.platform == 'ubuntu-latest' && matrix.jdk == 17
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: coverage
-          path: ./**/build/**/jacoco*.xml
