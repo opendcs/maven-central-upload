@@ -49,7 +49,6 @@ public class AssembleBundleTask extends DefaultTask
             }
             catch (IOException ex)
             {
-                ex.printStackTrace();
                 throw new GradleException("Unable to copy required file."+ex.getLocalizedMessage(), ex);
             }
         });
@@ -80,11 +79,12 @@ public class AssembleBundleTask extends DefaultTask
 
     private void copy(Path source, Path dest) throws IOException
     {
-        Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
-        createHashes(dest);
         var name = source.getFileName();
         var ascFile = Path.of(source.getParent().toString(), name.toString()+".asc");
+        // as valid bundle required the signature so don't both adding anything without one.
         if (ascFile.toFile().exists()) {
+            Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+            createHashes(dest);
             var destAscFile = Path.of(dest.getParent().toString(),dest.getFileName().toString()+".asc");
             Files.copy(ascFile, destAscFile, StandardCopyOption.REPLACE_EXISTING);
         }

@@ -27,6 +27,7 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
         project.getPluginManager().withPlugin("maven-publish", publishPlugin ->
         {
             final var hasSigning = project.getPluginManager().hasPlugin("signing");
+            final var hasGradlePlugin = project.getPluginManager().hasPlugin("java-gradle-plugin");
             var tasks = project.getTasks();
             var extension = project.getExtensions().findByType(PublishingExtension.class);
 

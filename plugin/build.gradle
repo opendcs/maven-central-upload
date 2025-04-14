@@ -33,6 +33,15 @@ def projectDescription  = """
 
 def projectName = "OpenDCS Maven Central Upload Plugin"
 
+
+if (shouldSign) {
+    signing {
+        sign publishing.publications.matching { pub ->
+            pub instanceof MavenPublication
+        }
+    }
+}
+
 gradlePlugin {
     // Define the plugin
     plugins {
@@ -72,11 +81,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-if (shouldSign) {
-    signing {
-        sign publishing.publications.maven
-    }
-}
+
 
 
 publishing.publications.withType(MavenPublication) {
