@@ -8,6 +8,7 @@
 plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     id 'java-gradle-plugin'
+    id 'central-upload.java-conventions'
     id 'central-upload.publishing-conventions'
 }
 
