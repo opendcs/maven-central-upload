@@ -59,7 +59,7 @@ public class AssembleBundleTask extends DefaultTask
             if (t instanceof GenerateMavenPom pomTask)
             {
                 var pomFile = pomTask.getDestination();
-                var pomFileCopy = new File(versionFolder, String.format("%s-%s.pom.xml", pub.getArtifactId(), pub.getVersion()));
+                var pomFileCopy = new File(versionFolder, String.format("%s-%s.pom", pub.getArtifactId(), pub.getVersion()));
                 try
                 {
                     copy(pomFile.toPath(), pomFileCopy.toPath());
