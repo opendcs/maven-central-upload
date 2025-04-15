@@ -57,9 +57,10 @@ public class AssembleBundleTask extends DefaultTask
                 }
             });
 
-            // get the pom file.
+            // get the pom files.
+            final var pubName = Character.toTitleCase(pub.getName().charAt(0))+pub.getName().substring(1);
             this.getTaskDependencies().getDependenciesForInternalUse(this).forEach(t -> {
-                if (t instanceof GenerateMavenPom pomTask)
+                if (t.getName().equals("generatePomFileFor"+pubName+"Publication") && t instanceof GenerateMavenPom pomTask)
                 {
                     var pomFile = pomTask.getDestination();
                     var pomFileCopy = new File(versionFolder, String.format("%s-%s.pom", pub.getArtifactId(), pub.getVersion()));

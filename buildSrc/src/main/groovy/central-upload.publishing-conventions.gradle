@@ -55,37 +55,34 @@ if (shouldSign) {
     }
 }
 
+publishing.publications.withType(MavenPublication) {
+    pom {
+        url = 'https://github.com/opendcs/maven-central-uploader'
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            pom {
-                url = 'https://github.com/opendcs/maven-central-uploader'
+        scm {
+            connection = 'scm:git:https://github.com/opendcs/maven-central-uploader.git'
+            developerConnection = 'scm:git:ssh://git@github.com:opendcs/maven-central-uploader.git'
+            url = 'https://github.com/opendcs/maven-central-uploader'
+        }
 
-                scm {
-                    connection = 'scm:git:https://github.com/opendcs/maven-central-uploader.git'
-                    developerConnection = 'scm:git:ssh://git@github.com:opendcs/maven-central-uploader.git'
-                    url = 'https://github.com/opendcs/maven-central-uploader'
-                }
+        licenses {
+            license {
+                name = 'CC0 1.0 Universal'
+                url = 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
+            }
+        }
 
-                licenses {
-                    license {
-                        name = 'CC0 1.0 Universal'
-                        url = 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'opendcs'
-                        name = 'The OpenDCS Team'
-                        email = 'https://github.com/opendcs'
-                    }
-                }
+        developers {
+            developer {
+                id = 'opendcs'
+                name = 'The OpenDCS Team'
+                email = 'https://github.com/opendcs'
             }
         }
     }
+}
 
+publishing {
     repositories {
         maven {
             def releaseUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
