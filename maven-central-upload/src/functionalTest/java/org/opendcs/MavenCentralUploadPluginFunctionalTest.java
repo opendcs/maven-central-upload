@@ -99,7 +99,7 @@ class MavenCentralUploadPluginFunctionalTest
 plugins {
     id('java-library')
     id('maven-publish')
-    id('io.github.opendcs.maven-central-upload')
+    id('io.github.opendcs.maven.maven-central-upload')
 }
 
 group = "org.opendcs.maven-test"

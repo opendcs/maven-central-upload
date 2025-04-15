@@ -20,9 +20,9 @@ version = tmp_version
 /**
  * Conditionally apply self once available.
  */
-def f = new File("${rootDir}/plugin/build/libs/plugin-${tmp_version}.jar")
+def f = new File("${rootDir}/maven-central-upload/build/libs/maven-central-upload-${tmp_version}.jar")
 if (f.exists()) {
-    plugins.apply('io.github.opendcs.maven-central-upload')
+    plugins.apply('io.github.opendcs.maven.maven-central-upload')
 }
 
 

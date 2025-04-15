@@ -8,7 +8,7 @@ repositories {
     mavenLocal()
 }
 def version = project.findProperty("versionOverride") ?: "99.main-SNAPSHOT"
-def f = new File("${rootDir}/../plugin/build/libs/plugin-${version}.jar")
+def f = new File("${rootDir}/../maven-central-upload/build/libs/maven-central-upload-${version}.jar")
 
 dependencies {
     implementation "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:6.0.1.5171"

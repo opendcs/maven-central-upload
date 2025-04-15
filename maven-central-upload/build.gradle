@@ -47,7 +47,7 @@ gradlePlugin {
     // Define the plugin
     plugins {
         mavenCentralUpload {
-            id = 'io.github.opendcs.maven-central-upload'
+            id = 'io.github.opendcs.maven.maven-central-upload'
             displayName = projectName
             implementationClass = 'org.opendcs.MavenCentralUploadPlugin'
         }

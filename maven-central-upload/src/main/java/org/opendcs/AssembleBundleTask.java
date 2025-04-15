@@ -13,6 +13,7 @@ import java.util.List;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
@@ -27,7 +28,8 @@ public class AssembleBundleTask extends DefaultTask
     final DirectoryProperty outputDirectory = getProject().getObjects()
                                                           .directoryProperty();
 
-    final Property<MavenPublication> publication = getProject().getObjects().property(MavenPublication.class);
+                                                          
+    final ListProperty<MavenPublication> publications = getProject().getObjects().listProperty(MavenPublication.class);
 
     @TaskAction
     public void assemble()
@@ -35,40 +37,43 @@ public class AssembleBundleTask extends DefaultTask
         var outputDir = outputDirectory.get().getAsFile();
         getProject().delete(outputDir);
         getProject().mkdir(outputDir);
-        final var pub = publication.get();
-        final var groupFolder = Path.of(outputDir.getAbsolutePath(), pub.getGroupId().split("\\."));
-        final var artifactFolder = new File(groupFolder.toFile(),pub.getArtifactId());
-        final var versionFolder = new File(artifactFolder, pub.getVersion());
-        versionFolder.mkdirs();
-        pub.getArtifacts().all(artifact ->
+        final var pubs = publications.get();
+        for (var pub: pubs)
         {
-            try
+            final var groupFolder = Path.of(outputDir.getAbsolutePath(), pub.getGroupId().split("\\."));
+            final var artifactFolder = new File(groupFolder.toFile(),pub.getArtifactId());
+            final var versionFolder = new File(artifactFolder, pub.getVersion());
+            versionFolder.mkdirs();
+            pub.getArtifacts().all(artifact ->
             {
-                var newArtifact = new File(versionFolder, artifact.getFile().toPath().getFileName().toString());
-                copy(artifact.getFile().toPath(), newArtifact.toPath());
-            }
-            catch (IOException ex)
-            {
-                throw new GradleException("Unable to copy required file."+ex.getLocalizedMessage(), ex);
-            }
-        });
-
-        // get the pom file.
-        this.getTaskDependencies().getDependenciesForInternalUse(this).forEach(t -> {
-            if (t instanceof GenerateMavenPom pomTask)
-            {
-                var pomFile = pomTask.getDestination();
-                var pomFileCopy = new File(versionFolder, String.format("%s-%s.pom", pub.getArtifactId(), pub.getVersion()));
                 try
                 {
-                    copy(pomFile.toPath(), pomFileCopy.toPath());
+                    var newArtifact = new File(versionFolder, artifact.getFile().toPath().getFileName().toString());
+                    copy(artifact.getFile().toPath(), newArtifact.toPath());
                 }
                 catch (IOException ex)
                 {
-                    throw new GradleException("Unable to copy pom."+ex.getLocalizedMessage(), ex);
+                    throw new GradleException("Unable to copy required file."+ex.getLocalizedMessage(), ex);
                 }
-            }
-        });
+            });
+
+            // get the pom file.
+            this.getTaskDependencies().getDependenciesForInternalUse(this).forEach(t -> {
+                if (t instanceof GenerateMavenPom pomTask)
+                {
+                    var pomFile = pomTask.getDestination();
+                    var pomFileCopy = new File(versionFolder, String.format("%s-%s.pom", pub.getArtifactId(), pub.getVersion()));
+                    try
+                    {
+                        copy(pomFile.toPath(), pomFileCopy.toPath());
+                    }
+                    catch (IOException ex)
+                    {
+                        throw new GradleException("Unable to copy pom."+ex.getLocalizedMessage(), ex);
+                    }
+                }
+            });
+        }
     }
 
 

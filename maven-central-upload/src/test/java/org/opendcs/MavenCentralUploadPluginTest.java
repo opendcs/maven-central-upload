@@ -39,7 +39,7 @@ class MavenCentralUploadPluginTest {
         {
             ext.getRepositories().add(new TestMavenRepo("mavenCentralApi"));
         });
-        project.getPlugins().apply("io.github.opendcs.maven-central-upload");
+        project.getPlugins().apply("io.github.opendcs.maven.maven-central-upload");
         
         // Verify the result
         final var tasks = project.getTasksByName("publishTestToMavenCentralApi", false);

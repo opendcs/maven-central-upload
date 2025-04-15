@@ -27,8 +27,8 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
         project.getPluginManager().withPlugin("maven-publish", publishPlugin ->
         {
             final var hasSigning = project.getPluginManager().hasPlugin("signing");
-            final var hasGradlePlugin = project.getPluginManager().hasPlugin("java-gradle-plugin");
             var tasks = project.getTasks();
+            var projectName = Character.toTitleCase(project.getName().charAt(0)) + project.getName().substring(1);
             var extension = project.getExtensions().findByType(PublishingExtension.class);
 
             if (extension != null)
@@ -38,36 +38,39 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                     task.setGroup(GROUP);
                     task.setDescription("Publish all artifacts of this build to maven central.");
                 });
+                var assembleTask = tasks.register("assemble"+projectName+"CentralApiBundle", AssembleBundleTask.class, task ->
+                {
+                    task.outputDirectory.set(project.getLayout().getBuildDirectory().dir("bundle"));
+                    task.setGroup(GROUP);
+                    task.setDescription("Gather all the require artifacts for this project.");
+                });
                 extension.getPublications().withType(MavenPublication.class).all(pub ->
                 {
                     final var name = pub.getName();
                     final var pubName = Character.toTitleCase(name.charAt(0)) + name.substring(1);
-                    final var assembleTask = tasks.register("assemble"+pubName+CENTRAL_API_SUFFIX+"CentralApiBundle", AssembleBundleTask.class, task ->
+                    assembleTask.configure(task ->
                     {
-                        task.outputDirectory.set(project.getLayout().getBuildDirectory().dir("bundle/"+name));
-                        task.publication.set(pub);
+                        task.publications.add(pub);
                         pub.getArtifacts().all(a -> task.dependsOn(a.getBuildDependencies()));
                         task.dependsOn(tasks.named("generatePomFileFor"+pubName+"Publication"));
                         if (hasSigning)
                         {
-                            task.dependsOn(tasks.named("sign"+pubName+"Publication"));
+                            task.dependsOn(tasks.matching(t -> t.getName().equals("sign"+pubName+"Publication")));
                         }
-                        task.setGroup(GROUP);
-
                     });
-
-                    final var zipBundleTask = tasks.register("zip"+pubName+CENTRAL_API_SUFFIX+"Bundle", Zip.class, task ->
+                });
+                    final var zipBundleTask = tasks.register("zip"+projectName+CENTRAL_API_SUFFIX+"Bundle", Zip.class, task ->
                     {
                         task.getInputs().dir(assembleTask.get().getOutputDirectory());
                         task.dependsOn(assembleTask);
                         task.setGroup(GROUP);
-                        task.getArchiveBaseName().set("central-api-bundle-for-"+project.getName()+"-"+pubName);
+                        task.getArchiveBaseName().set("central-api-bundle-for-"+project.getName());
                         task.getDestinationDirectory().set(project.getLayout().getBuildDirectory());
                         task.from(assembleTask.get().getOutputs());
                         task.getOutputs().file(task.getArchiveFile());
                     });
 
-                    final var publishTask = tasks.register("publish"+pubName+"To"+CENTRAL_API_SUFFIX, PublishToMavenCentral.class, task ->
+                    final var publishTask = tasks.register("publish"+projectName+"To"+CENTRAL_API_SUFFIX, PublishToMavenCentral.class, task ->
                     {
                         var repos = extension.getRepositories();
                         final ArtifactRepository remote = repos.findByName("mavenCentralApi");
@@ -84,7 +87,7 @@ public class MavenCentralUploadPlugin implements Plugin<Project> {
                         });
                     });
                     tasks.named(PUBLISH_ALL_TASK, t -> t.dependsOn(publishTask));
-                });
+                
             }
         });
     }

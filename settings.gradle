@@ -6,6 +6,6 @@
  */
 
 rootProject.name = 'maven-central-upload'
-include('plugin')
+include('maven-central-upload')
 include('central-api')
 include('uploader')
