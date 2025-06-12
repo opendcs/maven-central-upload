@@ -48,7 +48,7 @@ public abstract class PublishToMavenCentral extends DefaultTask
             logger.info("Using {} with size {}",fileToUpload.getAbsolutePath(), fileToUpload.length()/1024.0/1024.0);
             var properties = getProject().getProperties();
             final String automaticPublish = (String)properties.get("automaticPublish");
--           final boolean automatic = Boolean.parseBoolean(automaticPublish);
+            final boolean automatic = Boolean.parseBoolean(automaticPublish);
             final String waitForPublished = (String)properties.get("waitForPublished");
             final var publishedState = Boolean.parseBoolean(waitForPublished)
                                      ? DeploymentState.PUBLISHED : DeploymentState.PUBLISHING;
