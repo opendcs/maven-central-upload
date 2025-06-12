@@ -39,3 +39,37 @@ Since this project is a gradle publishing plugin and library it will use itself 
 WARNING: if you start playing around to help, use `./gradlew build -x jar` to start with. To bootstrap the use of the plugin
 the project is set to apply the plugin itself if the jar exists. Depending on any issues one is having this may prevent
 even a `./gradlew clean` if it's not evaluating correctly. Manually delete `plugin/build/libs/plugin.jar` if that happens.
+
+
+# Usage
+
+A publishing repository with the name "mavenCentralApi" is required.
+
+```groovy
+
+publishing {
+    repositories {
+        maven {
+            name = "mavenCentralApi"
+            url = "https://central.sonatype.com"
+            def user = project.findProperty("centralApiUsername")
+            def passwd = project.findProperty("centralApiPassword")
+            credentials {
+                username = user
+                password = passwd
+            }
+        }
+    }
+}
+```
+
+use of the signing extension is also required as that is a Maven Central requirement.
+
+There are two properties to control operations
+
+* -PwaitForPublish=true will cause the plugin to wait for the publication to be in the `PUBLISHED` state before moving on.
+* -PwaitForPublish=false (default) will wait until the publication is in the `PUBLISHING` state adn then move on.
+
+* -PautomaticPublish=true will cause the plugin to tell the api to automatically publish if all validation checks pass.
+* -PautomaticPublish=false (default) will cause the plugin to tell the api *not* to automatically publish. You must go into
+  the Maven Central interface and manually publish.
