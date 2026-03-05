@@ -5,7 +5,7 @@ The goal of the project is to be a generic library for others to use and provide
 that wraps the existing maven-publish plugin to handle everything requirement up until building the bundle zip
 and pushing that bundle to maven central.
 
-The Central API OpenAPI Specification was full from below and converted to yaml, along with a few validation corrections
+The Central API OpenAPI Specification was pulled from below and converted to yaml, along with a few validation corrections
 and the final result can be found within the central-api sub project.
 
 https://central.sonatype.com/swagger.json
@@ -68,7 +68,7 @@ use of the signing extension is also required as that is a Maven Central require
 There are two properties to control operations
 
 * -PwaitForPublish=true will cause the plugin to wait for the publication to be in the `PUBLISHED` state before moving on.
-* -PwaitForPublish=false (default) will wait until the publication is in the `PUBLISHING` state adn then move on.
+* -PwaitForPublish=false (default) will wait until the publication is in the `PUBLISHING` state and then move on.
 
 * -PautomaticPublish=true will cause the plugin to tell the api to automatically publish if all validation checks pass.
 * -PautomaticPublish=false (default) will cause the plugin to tell the api *not* to automatically publish. You must go into
